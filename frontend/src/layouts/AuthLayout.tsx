@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Tag, theme } from 'antd';
 import {
@@ -7,6 +8,8 @@ import {
   DashboardOutlined,
   TeamOutlined,
   LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -30,6 +33,7 @@ export default function AuthLayout() {
   const location = useLocation();
   const { logout, isAdmin } = useAuth();
   const { token: themeToken } = theme.useToken();
+  const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = isAdmin ? adminMenuItems : userMenuItems;
 
@@ -64,13 +68,16 @@ export default function AuthLayout() {
               fontWeight: 700,
               fontSize: 16,
               fontFamily: 'monospace',
+              flexShrink: 0,
             }}
           >
             Q
           </div>
-          <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
-            RAG 知识库问答系统
-          </span>
+          {!collapsed && (
+            <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
+              RAG 知识库问答系统
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Tag color={isAdmin ? 'blue' : 'green'}>{isAdmin ? '管理员' : '用户'}</Tag>
@@ -82,17 +89,37 @@ export default function AuthLayout() {
       <Layout>
         <Sider
           width={220}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          trigger={null}
           style={{
             background: themeToken.colorBgContainer,
             borderRight: `1px solid ${themeToken.colorBorderSecondary}`,
           }}
         >
+          <div
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderBottom: `1px solid ${themeToken.colorBorderSecondary}`,
+              color: themeToken.colorTextSecondary,
+              fontSize: 16,
+              transition: 'color 150ms',
+            }}
+          >
+            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          </div>
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
             items={menuItems}
             onClick={({ key }) => navigate(key)}
-            style={{ border: 'none', marginTop: 8 }}
+            style={{ border: 'none', marginTop: 4 }}
           />
         </Sider>
         <Content
