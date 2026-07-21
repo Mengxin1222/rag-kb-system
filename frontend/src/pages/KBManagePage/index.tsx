@@ -135,7 +135,9 @@ export default function KBManagePage() {
         system_prompt: currentKB.system_prompt,
         llm_model: currentKB.llm_model,
         llm_temperature: currentKB.llm_temperature,
-      });
+        embedding_model: currentKB.embedding_model,
+        rerank_model: currentKB.rerank_model,
+      } as any);
       message.success('策略配置已保存');
     } catch {
       message.error('保存失败');

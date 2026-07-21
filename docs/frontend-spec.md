@@ -324,7 +324,16 @@
 | LLM 模型 | Select | deepseek-chat | — |
 | LLM Temperature | Slider | 0.7 | min=0, max=2, step=0.1 |
 | 词嵌入模型 | Input | 默认值 | 只读或可编辑 |
-| Rerank 模型 | Input | 默认值 | 只读或可编辑 |
+| Rerank 模型 | Input | 默认值 | 可编辑 |
+
+**模型配置**
+
+| 字段 | 控件 | 默认值 | 说明 |
+|---|---|---|---|
+| LLM 模型 | Select: deepseek-v4-pro / deepseek-v4-flash | deepseek-v4-pro | 大语言模型 |
+| LLM Temperature | Slider (0-2, 0.1步长) | 0.7 | 生成温度，越低越确定 |
+| 词嵌入模型 | Input | text-embedding-v3 | 向量化模型 |
+| Rerank 模型 | Input | gte-rerank | 重排序模型 |
 
 每个配置组为一个 Card，内部用 Form 布局。修改任意字段后底部「保存配置」按钮激活。
 

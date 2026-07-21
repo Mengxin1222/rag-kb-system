@@ -132,14 +132,25 @@ export default function StrategyConfigTab({ kb, onUpdate, onSave }: Props) {
         </Space>
       </Card>
 
+      <Card title="模型配置" style={{ borderRadius: 12 }}>
+        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>词嵌入模型</Text>
+              <Input value={kb.embedding_model} onChange={(e) => update({ embedding_model: e.target.value })} placeholder="默认: text-embedding-v3" />
+            </div>
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>Rerank 模型</Text>
+              <Input value={kb.rerank_model} onChange={(e) => update({ rerank_model: e.target.value })} placeholder="默认: gte-rerank" />
+            </div>
+          </div>
+        </Space>
+      </Card>
+
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button type="primary" onClick={() => { onSave(); setDirty(false); }} disabled={!dirty} style={{ opacity: dirty ? 1 : 0.5 }}>
           保存配置
         </Button>
-        <Space>
-          <Text type="secondary" style={{ fontSize: 13 }}>Embedding: {kb.embedding_model || '默认'}</Text>
-          <Text type="secondary" style={{ fontSize: 13 }}>Rerank: {kb.rerank_model || '默认'}</Text>
-        </Space>
       </div>
     </Space>
   );
