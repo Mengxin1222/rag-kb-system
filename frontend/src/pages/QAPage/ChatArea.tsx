@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Input, Button, Typography, Empty, Space, Spin } from 'antd';
+import { Input, Button, Typography, Empty, Spin } from 'antd';
 import { SendOutlined, StopOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import type { Message } from '../../types';
 import MessageBubble from './MessageBubble';
@@ -82,29 +82,6 @@ export default function ChatArea({ currentKB, messages, isStreaming, onSend, onS
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
-      <div
-        style={{
-          padding: '12px 24px',
-          background: '#fff',
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-        }}
-      >
-        <Text strong style={{ fontSize: 15 }}>
-          {currentKB.name}
-        </Text>
-        <Space size={16}>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            📄 文档 <strong>{currentKB.docCount}</strong>
-          </Text>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            🔬 切片 <strong>{currentKB.chunkCount}</strong>
-          </Text>
-        </Space>
-      </div>
 
       <div ref={messagesWrapRef} style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
         <div
