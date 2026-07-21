@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Card, Button, Table, Tag, Typography, message, Popconfirm, Space, Upload } from 'antd';
+import { Card, Button, Table, Tag, Typography, message, Popconfirm, Space, Upload, Modal, Spin } from 'antd';
 import { UploadOutlined, EyeOutlined, EditOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
-import { listDocuments, deleteDocument, type DocListItem } from '../../api/documents';
+import { listDocuments, deleteDocument, getDocPreview, type DocListItem } from '../../api/documents';
 
 const { Text } = Typography;
 
@@ -22,6 +22,10 @@ interface Props {
 export default function DocManageTab({ kbId, onSwitchToChunks }: Props) {
   const [docs, setDocs] = useState<DocListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewId, setPreviewId] = useState<number | null>(null);
+  const [previewContent, setPreviewContent] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingKbRef = useRef(kbId);
 
@@ -80,6 +84,20 @@ export default function DocManageTab({ kbId, onSwitchToChunks }: Props) {
     }
   };
 
+  const openPreview = async (doc: DocListItem) => {
+    setPreviewId(doc.id);
+    setPreviewTitle(doc.filename);
+    setPreviewLoading(true);
+    try {
+      const data = await getDocPreview(doc.id);
+      setPreviewContent(data.content || '暂无内容');
+    } catch {
+      setPreviewContent('获取预览失败');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const handleUpload = async (file: File) => {
     try {
       const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
@@ -134,7 +152,7 @@ export default function DocManageTab({ kbId, onSwitchToChunks }: Props) {
         <Space size={4}>
           {record.status === 'ready' && (
             <>
-              <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => message.info('预览开发中')}>预览</Button>
+              <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => openPreview(record)}>预览</Button>
               <Button type="link" size="small" icon={<EditOutlined />} onClick={() => onSwitchToChunks(record.id)}>编辑切片</Button>
             </>
           )}
@@ -150,7 +168,8 @@ export default function DocManageTab({ kbId, onSwitchToChunks }: Props) {
   ];
 
   return (
-    <Card
+    <>
+      <Card
       title="文档管理"
       extra={
         <Upload beforeUpload={handleUpload} showUploadList={false} accept={acceptFormats}>
@@ -161,5 +180,22 @@ export default function DocManageTab({ kbId, onSwitchToChunks }: Props) {
     >
       <Table columns={columns} dataSource={docs} rowKey="id" pagination={false} size="middle" loading={loading} />
     </Card>
+
+    <Modal
+      title={previewTitle || '文档预览'}
+      open={!!previewId}
+      onCancel={() => setPreviewId(null)}
+      width={800}
+      footer={null}
+    >
+      {previewLoading ? (
+        <div style={{ textAlign: 'center', padding: 40 }}><Spin size="large" /></div>
+      ) : (
+        <div style={{ lineHeight: 1.8, whiteSpace: 'pre-wrap', maxHeight: '70vh', overflow: 'auto' }}>
+          {previewContent}
+        </div>
+      )}
+    </Modal>
+    </>
   );
 }
