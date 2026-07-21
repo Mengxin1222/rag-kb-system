@@ -7,10 +7,10 @@ import {
   DatabaseOutlined,
   DashboardOutlined,
   TeamOutlined,
-  SettingOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -38,24 +38,41 @@ export default function AuthLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = isAdmin ? adminMenuItems : userMenuItems;
+
   const selectedKey = menuItems.find((item) => location.pathname.startsWith(item.key))?.key || '/qa';
 
   return (
     <Layout style={{ height: '100vh' }}>
       <Header
         style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           background: themeToken.colorBgContainer,
           borderBottom: `1px solid ${themeToken.colorBorderSecondary}`,
-          padding: '0 24px', height: 56, lineHeight: '56px', zIndex: 10,
+          padding: '0 24px',
+          height: 56,
+          lineHeight: '56px',
+          zIndex: 10,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 32, height: 32, background: themeToken.colorPrimary, borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: 'monospace', flexShrink: 0,
-          }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              background: themeToken.colorPrimary,
+              borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 16,
+              fontFamily: 'monospace',
+              flexShrink: 0,
+            }}
+          >
             Q
           </div>
           <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
@@ -65,13 +82,22 @@ export default function AuthLayout() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 14 }}>{user?.username}</span>
           <Tag color={isAdmin ? 'blue' : 'green'}>{isAdmin ? '管理员' : '用户'}</Tag>
-          <Button icon={<LogoutOutlined />} onClick={logout}>退出</Button>
+          <Button icon={<LogoutOutlined />} onClick={logout}>
+            退出
+          </Button>
         </div>
       </Header>
       <Layout>
         <Sider
-          width={220} collapsible collapsed={collapsed} onCollapse={setCollapsed} trigger={null}
-          style={{ background: themeToken.colorBgContainer, borderRight: `1px solid ${themeToken.colorBorderSecondary}` }}
+          width={220}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          trigger={null}
+          style={{
+            background: themeToken.colorBgContainer,
+            borderRight: `1px solid ${themeToken.colorBorderSecondary}`,
+          }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Menu
@@ -84,16 +110,29 @@ export default function AuthLayout() {
             <div
               onClick={() => setCollapsed(!collapsed)}
               style={{
-                height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', borderTop: `1px solid ${themeToken.colorBorderSecondary}`,
-                color: themeToken.colorTextSecondary, fontSize: 16, flexShrink: 0,
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                borderTop: `1px solid ${themeToken.colorBorderSecondary}`,
+                color: themeToken.colorTextSecondary,
+                fontSize: 16,
+                transition: 'color 150ms',
+                flexShrink: 0,
               }}
             >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </div>
           </div>
         </Sider>
-        <Content style={{ padding: 24, overflow: 'auto', background: themeToken.colorBgLayout }}>
+        <Content
+          style={{
+            padding: 24,
+            overflow: 'auto',
+            background: themeToken.colorBgLayout,
+          }}
+        >
           <Outlet />
         </Content>
       </Layout>
