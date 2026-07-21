@@ -95,8 +95,8 @@ export default function AuthLayout() {
           onCollapse={setCollapsed}
           trigger={null}
           style={{
-            background: '#001529',
-            borderRight: 'none',
+            background: themeToken.colorBgContainer,
+            borderRight: `1px solid ${themeToken.colorBorderSecondary}`,
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -106,7 +106,6 @@ export default function AuthLayout() {
               items={menuItems}
               onClick={({ key }) => navigate(key)}
               style={{ border: 'none', marginTop: 4, flex: 1 }}
-              theme="dark"
             />
             <div
               onClick={() => setCollapsed(!collapsed)}
