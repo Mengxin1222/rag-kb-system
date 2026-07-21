@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Input, Typography, Button } from 'antd';
+import { Input, Typography, Button, Popconfirm } from 'antd';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import type { KnowledgeBase, Conversation } from '../../types';
 
@@ -145,22 +145,23 @@ export default function QASider({
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {conv.title}
                 </span>
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteConv(conv.id);
-                  }}
-                  style={{ visibility: 'hidden', padding: 0, minWidth: 20 }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.visibility = 'visible';
-                  }}
-                  className="conv-delete-btn"
+                <Popconfirm
+                  title="确定删除此对话？"
+                  onConfirm={() => onDeleteConv(conv.id)}
+                  onCancel={(e) => e?.stopPropagation()}
                 >
-                  🗑
-                </Button>
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    onClick={(e) => { e.stopPropagation(); }}
+                    style={{ visibility: 'hidden', padding: 0, minWidth: 20 }}
+                    className="conv-delete-btn"
+                    title="删除对话"
+                  >
+                    🗑
+                  </Button>
+                </Popconfirm>
               </div>
             ))
           )}

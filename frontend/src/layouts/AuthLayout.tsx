@@ -31,7 +31,7 @@ const adminMenuItems = [
 export default function AuthLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { token: themeToken } = theme.useToken();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -80,6 +80,7 @@ export default function AuthLayout() {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 14 }}>{user?.username}</span>
           <Tag color={isAdmin ? 'blue' : 'green'}>{isAdmin ? '管理员' : '用户'}</Tag>
           <Button icon={<LogoutOutlined />} onClick={logout}>
             退出
@@ -94,8 +95,8 @@ export default function AuthLayout() {
           onCollapse={setCollapsed}
           trigger={null}
           style={{
-            background: themeToken.colorBgContainer,
-            borderRight: `1px solid ${themeToken.colorBorderSecondary}`,
+            background: '#001529',
+            borderRight: 'none',
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -105,6 +106,7 @@ export default function AuthLayout() {
               items={menuItems}
               onClick={({ key }) => navigate(key)}
               style={{ border: 'none', marginTop: 4, flex: 1 }}
+              theme="dark"
             />
             <div
               onClick={() => setCollapsed(!collapsed)}

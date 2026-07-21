@@ -79,6 +79,7 @@ export default function QAPage() {
   }, []);
 
   const selectKB = useCallback((kb: ReturnType<typeof formatKBItem>) => {
+    if (streamAbortRef.current) { streamAbortRef.current(); setIsStreaming(false); }
     setCurrentKB(kb);
     setCurrentConv(null);
     setMessages([]);
@@ -86,6 +87,7 @@ export default function QAPage() {
   }, [fetchConvs]);
 
   const selectConv = useCallback(async (conv: Conversation) => {
+    if (streamAbortRef.current) { streamAbortRef.current(); setIsStreaming(false); }
     setCurrentConv(conv);
     try {
       const msgs = await getMessages(conv.id);

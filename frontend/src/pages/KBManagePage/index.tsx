@@ -172,7 +172,7 @@ export default function KBManagePage() {
     {
       key: 'chunks',
       label: '切片编辑器',
-      children: <ChunkEditorTab />,
+      children: <ChunkEditorTab kbId={currentKB?.id || 0} />,
     },
   ];
 

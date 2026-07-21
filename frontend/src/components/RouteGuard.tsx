@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { Spin, Result } from 'antd';
+import { Spin, message } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -25,7 +25,8 @@ export default function RouteGuard({ children, requireAdmin }: Props) {
   }
 
   if (requireAdmin && !isAdmin) {
-    return <Result status="403" title="无权限" subTitle="只有管理员可以访问此页面" />;
+    message.error('无权限');
+    return <Navigate to="/qa" replace />;
   }
 
   return <>{children}</>;
