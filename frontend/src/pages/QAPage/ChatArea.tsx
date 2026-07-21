@@ -1,20 +1,28 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Input, Button, Typography, Empty, Space } from 'antd';
+import { Input, Button, Typography, Empty, Space, Spin } from 'antd';
 import { SendOutlined, StopOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import type { KnowledgeBase, Message } from '../../types';
+import type { Message } from '../../types';
 import MessageBubble from './MessageBubble';
 
 const { Text } = Typography;
 
+interface KBInfo {
+  id: number;
+  name: string;
+  docCount: number;
+  chunkCount: number;
+}
+
 interface Props {
-  currentKB: KnowledgeBase | null;
+  currentKB: KBInfo | null;
   messages: Message[];
   isStreaming: boolean;
   onSend: (query: string) => void;
   onStop: () => void;
+  loadingKBs?: boolean;
 }
 
-export default function ChatArea({ currentKB, messages, isStreaming, onSend, onStop }: Props) {
+export default function ChatArea({ currentKB, messages, isStreaming, onSend, onStop, loadingKBs }: Props) {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesWrapRef = useRef<HTMLDivElement>(null);
@@ -56,10 +64,18 @@ export default function ChatArea({ currentKB, messages, isStreaming, onSend, onS
     }
   };
 
+  if (loadingKBs) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spin size="large" tip="加载知识库列表..." />
+      </div>
+    );
+  }
+
   if (!currentKB) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Empty description="请选择一个知识库开始提问" />
+        <Empty description="暂无知识库，请联系管理员创建" />
       </div>
     );
   }

@@ -3,39 +3,36 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { Card, Input, Button, Checkbox, Typography, message, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { loginAPI } from '../api/auth';
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
-  const [remember, setRemember] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (user) return <Navigate to="/qa" replace />;
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
       message.error('请输入用户名和密码');
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      if (username === 'admin' && password === 'admin123') {
-        login({ username: 'admin', role: 'admin' }, 'mock-jwt-token-admin', remember);
-        message.success('登录成功');
-        navigate('/qa', { replace: true });
-      } else if (username === 'user' && password === 'user123') {
-        login({ username: 'zhangsan', role: 'user' }, 'mock-jwt-token-user', remember);
-        message.success('登录成功');
-        navigate('/qa', { replace: true });
-      } else {
-        message.error('用户名或密码错误');
-        setLoading(false);
-      }
-    }, 800);
+    try {
+      const data = await loginAPI(username.trim(), password);
+      login({ username: username.trim(), role: data.role as 'admin' | 'user' }, data.access_token, remember);
+      message.success('登录成功');
+      navigate('/qa', { replace: true });
+    } catch {
+      message.error('用户名或密码错误');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

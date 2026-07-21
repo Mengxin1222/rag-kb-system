@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Layout, Tabs, Modal, Input, Typography, message } from 'antd';
-import type { KnowledgeBase } from '../../types';
+import { useState, useEffect, useCallback } from 'react';
+import { Layout, Tabs, Modal, Input, Typography, message, Empty } from 'antd';
+import { listKBs, createKB, deleteKB, updateKB, getKB } from '../../api/kb';
 import KBManageSider from './KBManageSider';
 import BasicInfoTab from './BasicInfoTab';
 import StrategyConfigTab from './StrategyConfigTab';
@@ -10,66 +10,170 @@ import ChunkEditorTab from './ChunkEditorTab';
 const { TextArea } = Input;
 const { Text } = Typography;
 
-const mockKBs: KnowledgeBase[] = [
-  { id: 1, name: '产品手册知识库', description: '产品相关文档集合', docCount: 8, chunkCount: 142, created_at: '2025-03-15', chunk_method: 'heading', chunk_heading_levels: '2', chunk_max_chars: 1000, chunk_overlap: 0, retrieval_top_k: 20, bm25_top_k: 20, rrf_k: 60, rerank_top_n: 5, conversation_max_rounds: 10, context_compression: true, system_prompt: '你是一个专业的产品知识助手...', llm_model: 'deepseek-v4-pro', llm_temperature: 0.7, embedding_model: 'text-embedding-v3', rerank_model: 'gte-rerank' },
-  { id: 2, name: '技术文档知识库', description: '技术架构和开发文档', docCount: 15, chunkCount: 230, created_at: '2025-04-20', chunk_method: 'heading', chunk_heading_levels: '2', chunk_max_chars: 1200, chunk_overlap: 100, retrieval_top_k: 25, bm25_top_k: 25, rrf_k: 60, rerank_top_n: 5, conversation_max_rounds: 15, context_compression: true, system_prompt: '你是一个技术架构助手...', llm_model: 'deepseek-v4-pro', llm_temperature: 0.5, embedding_model: 'text-embedding-v3', rerank_model: 'gte-rerank' },
-  { id: 3, name: '规章制度知识库', description: '公司规章制度和流程文档', docCount: 6, chunkCount: 89, created_at: '2025-05-10', chunk_method: 'heading', chunk_heading_levels: '3', chunk_max_chars: 800, chunk_overlap: 0, retrieval_top_k: 20, bm25_top_k: 20, rrf_k: 60, rerank_top_n: 5, conversation_max_rounds: 10, context_compression: true, system_prompt: '你是公司制度助手...', llm_model: 'deepseek-v4-pro', llm_temperature: 0.7, embedding_model: 'text-embedding-v3', rerank_model: 'gte-rerank' },
-];
+function kbToForm(kb: { id: number; name: string; [key: string]: unknown }) {
+  return {
+    id: kb.id,
+    name: kb.name,
+    description: (kb.description as string) || '',
+    docCount: 0,
+    chunkCount: 0,
+    created_at: (kb.created_at as string) || '',
+    chunk_method: (kb.chunk_method as string) || 'heading',
+    chunk_heading_levels: (kb.chunk_heading_levels as string) || '2',
+    chunk_max_chars: (kb.chunk_max_chars as number) || 1000,
+    chunk_overlap: (kb.chunk_overlap as number) || 0,
+    retrieval_top_k: (kb.retrieval_top_k as number) || 20,
+    bm25_top_k: (kb.bm25_top_k as number) || 20,
+    rrf_k: (kb.rrf_k as number) || 60,
+    rerank_top_n: (kb.rerank_top_n as number) || 5,
+    conversation_max_rounds: (kb.conversation_max_rounds as number) || 10,
+    context_compression: kb.context_compression !== false,
+    system_prompt: (kb.system_prompt as string) || '',
+    llm_model: (kb.llm_model as string) || 'deepseek-v4-pro',
+    llm_temperature: (kb.llm_temperature as number) || 0.7,
+    embedding_model: (kb.embedding_model as string) || '',
+    rerank_model: (kb.rerank_model as string) || '',
+  };
+}
 
 export default function KBManagePage() {
-  const [kbs, setKBs] = useState<KnowledgeBase[]>(mockKBs);
-  const [currentKB, setCurrentKB] = useState<KnowledgeBase>(mockKBs[0]);
+  const [kbs, setKBs] = useState<ReturnType<typeof kbToForm>[]>([]);
+  const [currentKB, setCurrentKB] = useState<ReturnType<typeof kbToForm> | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('basic');
   const [showNewKBModal, setShowNewKBModal] = useState(false);
   const [newKBName, setNewKBName] = useState('');
   const [newKBDesc, setNewKBDesc] = useState('');
+  const [creating, setCreating] = useState(false);
 
-  const selectKB = (kb: KnowledgeBase) => {
-    setCurrentKB(kb);
+  const fetchKBs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await listKBs();
+      const mapped = (data as any[]).map(kbToForm);
+      setKBs(mapped);
+      if (mapped.length > 0 && (!currentKB || !mapped.find((k) => k.id === currentKB.id))) {
+        setCurrentKB(mapped[0]);
+      }
+    } catch {
+      message.error('获取知识库列表失败');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchKBs(); }, []);
+
+  const selectKB = async (kbSimple: { id: number }) => {
+    try {
+      const detail = await getKB(kbSimple.id);
+      setCurrentKB(kbToForm(detail as any));
+    } catch {
+      const existing = kbs.find((k) => k.id === kbSimple.id);
+      if (existing) setCurrentKB(existing);
+    }
     setActiveTab('basic');
   };
 
-  const createKB = () => {
-    if (!newKBName.trim()) {
-      message.error('请输入知识库名称');
-      return;
+  const handleCreate = async () => {
+    if (!newKBName.trim()) { message.error('请输入知识库名称'); return; }
+    setCreating(true);
+    try {
+      const kb = await createKB({ name: newKBName.trim(), description: newKBDesc.trim() });
+      message.success('知识库创建成功');
+      setShowNewKBModal(false);
+      setNewKBName('');
+      setNewKBDesc('');
+      await fetchKBs();
+      const detail = await getKB(kb.id);
+      setCurrentKB(kbToForm(detail as any));
+    } catch {
+      message.error('创建失败');
+    } finally {
+      setCreating(false);
     }
-    const newKB: KnowledgeBase = {
-      ...mockKBs[0],
-      id: Date.now(),
-      name: newKBName.trim(),
-      description: newKBDesc.trim(),
-      docCount: 0,
-      chunkCount: 0,
-      created_at: new Date().toISOString().split('T')[0],
-    };
-    setKBs((prev) => [...prev, newKB]);
-    setCurrentKB(newKB);
-    setShowNewKBModal(false);
-    setNewKBName('');
-    setNewKBDesc('');
-    message.success('知识库创建成功');
   };
 
-  const updateKB = (updates: Partial<KnowledgeBase>) => {
-    const updated = { ...currentKB, ...updates };
-    setCurrentKB(updated);
-    setKBs((prev) => prev.map((kb) => (kb.id === updated.id ? updated : kb)));
+  const handleSave = async (name: string, desc: string) => {
+    if (!currentKB) return;
+    try {
+      await updateKB(currentKB.id, { name, description: desc });
+      message.success('保存成功');
+      setCurrentKB({ ...currentKB, name, description: desc });
+      setKBs((prev) => prev.map((k) => (k.id === currentKB.id ? { ...k, name, description: desc } : k)));
+    } catch {
+      message.error('保存失败');
+    }
   };
 
-  const deleteKB = () => {
-    const filtered = kbs.filter((kb) => kb.id !== currentKB.id);
-    setKBs(filtered);
-    if (filtered.length > 0) {
-      setCurrentKB(filtered[0]);
+  const handleDelete = async () => {
+    if (!currentKB) return;
+    try {
+      await deleteKB(currentKB.id);
+      message.success('已删除');
+      setKBs((prev) => prev.filter((k) => k.id !== currentKB.id));
+      setCurrentKB(null);
+    } catch {
+      message.error('删除失败');
     }
+  };
+
+  const handleSaveStrategy = async () => {
+    if (!currentKB) return;
+    try {
+      await updateKB(currentKB.id, {
+        chunk_method: currentKB.chunk_method,
+        chunk_heading_levels: currentKB.chunk_heading_levels,
+        chunk_max_chars: currentKB.chunk_max_chars,
+        chunk_overlap: currentKB.chunk_overlap,
+        retrieval_top_k: currentKB.retrieval_top_k,
+        bm25_top_k: currentKB.bm25_top_k,
+        rrf_k: currentKB.rrf_k,
+        rerank_top_n: currentKB.rerank_top_n,
+        conversation_max_rounds: currentKB.conversation_max_rounds,
+        context_compression: currentKB.context_compression,
+        system_prompt: currentKB.system_prompt,
+        llm_model: currentKB.llm_model,
+        llm_temperature: currentKB.llm_temperature,
+      });
+      message.success('策略配置已保存');
+    } catch {
+      message.error('保存失败');
+    }
+  };
+
+  const updateKBField = (fields: Partial<ReturnType<typeof kbToForm>>) => {
+    if (!currentKB) return;
+    setCurrentKB({ ...currentKB, ...fields });
   };
 
   const tabItems = [
-    { key: 'basic', label: '基础信息', children: <BasicInfoTab kb={currentKB} onSave={(name, desc) => updateKB({ name, description: desc })} onDelete={deleteKB} /> },
-    { key: 'strategy', label: '策略配置', children: <StrategyConfigTab kb={currentKB} onSave={() => {}} /> },
-    { key: 'docs', label: '文档管理', children: <DocManageTab onSwitchToChunks={() => setActiveTab('chunks')} /> },
-    { key: 'chunks', label: '切片编辑器', children: <ChunkEditorTab /> },
+    {
+      key: 'basic',
+      label: '基础信息',
+      children: currentKB ? (
+        <BasicInfoTab kb={currentKB} onSave={handleSave} onDelete={handleDelete} />
+      ) : null,
+    },
+    {
+      key: 'strategy',
+      label: '策略配置',
+      children: currentKB ? (
+        <StrategyConfigTab kb={currentKB} onUpdate={(fields) => updateKBField(fields)} onSave={handleSaveStrategy} />
+      ) : null,
+    },
+    {
+      key: 'docs',
+      label: '文档管理',
+      children: currentKB ? (
+        <DocManageTab kbId={currentKB.id} onSwitchToChunks={() => setActiveTab('chunks')} />
+      ) : null,
+    },
+    {
+      key: 'chunks',
+      label: '切片编辑器',
+      children: <ChunkEditorTab />,
+    },
   ];
 
   return (
@@ -80,41 +184,34 @@ export default function KBManagePage() {
           currentKB={currentKB}
           onSelectKB={selectKB}
           onNewKB={() => setShowNewKBModal(true)}
+          loading={loading}
         />
       </Layout.Sider>
       <Layout.Content style={{ background: '#f5f5f5', overflow: 'auto', padding: 24 }}>
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+        {!currentKB && !loading ? (
+          <Empty description="请选择或创建一个知识库" style={{ marginTop: 100 }} />
+        ) : (
+          <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+        )}
       </Layout.Content>
 
       <Modal
         title="新建知识库"
         open={showNewKBModal}
         onCancel={() => setShowNewKBModal(false)}
-        onOk={createKB}
+        onOk={handleCreate}
         okText="创建"
         cancelText="取消"
+        confirmLoading={creating}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
           <div>
-            <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>
-              名称 *
-            </Text>
-            <Input
-              placeholder="请输入知识库名称"
-              value={newKBName}
-              onChange={(e) => setNewKBName(e.target.value)}
-            />
+            <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>名称 *</Text>
+            <Input placeholder="请输入知识库名称" value={newKBName} onChange={(e) => setNewKBName(e.target.value)} />
           </div>
           <div>
-            <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>
-              描述
-            </Text>
-            <TextArea
-              placeholder="请输入知识库描述（选填）"
-              value={newKBDesc}
-              onChange={(e) => setNewKBDesc(e.target.value)}
-              rows={3}
-            />
+            <Text strong style={{ display: 'block', marginBottom: 6, fontSize: 13 }}>描述</Text>
+            <TextArea placeholder="请输入知识库描述（选填）" value={newKBDesc} onChange={(e) => setNewKBDesc(e.target.value)} rows={3} />
           </div>
         </div>
       </Modal>
