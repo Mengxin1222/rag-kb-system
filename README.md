@@ -97,7 +97,7 @@ npm run dev
 │   │   │   ├── kb.py            # 知识库 CRUD + Chunk 搜索
 │   │   │   ├── documents.py     # 文档上传/管理/切片编辑
 │   │   │   ├── chat.py          # 对话 + SSE 流式问答
-│   │   │   └── admin.py         # 用户管理 + 仪表盘
+│   │   │   └── admin.py         # 用户管理 + 仪表盘 + 系统配置
 │   │   ├── services/            # 业务逻辑
 │   │   │   ├── auth.py          # bcrypt + JWT
 │   │   │   ├── mineru.py        # MinerU 文档转换
@@ -110,7 +110,8 @@ npm run dev
 │   │   │   ├── retrieval.py     # 混合检索 + RRF + Rerank + Chunk 搜索
 │   │   │   ├── rerank.py        # Rerank API
 │   │   │   ├── llm.py           # DeepSeek 流式 LLM
-│   │   │   └── compression.py   # 上下文压缩
+│   │   │   ├── compression.py   # 上下文压缩
+│   │   │   └── settings_manager.py  # 系统配置持久化 (API Key/URL)
 │   │   └── utils/
 │   ├── seed.py                  # 种子脚本
 │   ├── requirements.txt
@@ -129,7 +130,8 @@ npm run dev
 │   │       ├── SearchPage/           # 知识库搜索 (BM25/语义/混合)
 │   │       ├── KBManagePage/         # 知识库管理 (4 Tab)
 │   │       ├── DashboardPage.tsx     # 仪表盘 + 7天趋势
-│   │       └── UserManagePage.tsx    # 用户管理 CRUD
+│   │       ├── UserManagePage.tsx    # 用户管理 CRUD
+│   │       └── SettingsPage.tsx      # 模型配置 (API Key/URL)
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.ts
@@ -170,6 +172,7 @@ npm run dev
 ### 管理功能
 - 用户管理：创建/删除用户，支持管理员和普通用户角色
 - 仪表盘：知识库/文档/查询统计 + 7天趋势 + 活跃排行
+- 模型配置：集中管理 LLM/Embedding/Rerank/MinerU 的 API 地址和密钥
 
 ## API 总览
 
@@ -180,7 +183,7 @@ npm run dev
 | 文档 | `/api/documents` | POST /upload, GET /{id}/preview, PUT /{id}/strategy, GET /{id}/chunks, POST /{id}/finalize |
 | 对话 | `/api/conversations` | POST /create, GET /list, GET /{id}/messages, DELETE /{id} |
 | 问答 | `/api/chat` | POST /send (SSE) |
-| 管理 | `/api/admin` | GET /dashboard, POST /users, DELETE /users/{id} |
+| 管理 | `/api/admin` | GET /dashboard, POST /users, DELETE /users/{id}, GET/PUT /settings |
 
 ## License
 

@@ -56,6 +56,7 @@
 | `/kb/manage` | 知识库管理 | Admin | 知识库管理 |
 | `/dashboard` | 仪表盘 | Admin | 仪表盘 |
 | `/admin/users` | 用户管理 | Admin | 用户管理 |
+| `/admin/settings` | 模型配置 | Admin | 模型配置 |
 | `/` | — | — | 重定向到 `/qa` |
 
 ### 3.1 菜单结构
@@ -76,6 +77,7 @@
 | 知识库管理 | `DatabaseOutlined` | `/kb/manage` |
 | 仪表盘 | `DashboardOutlined` | `/dashboard` |
 | 用户管理 | `TeamOutlined` | `/admin/users` |
+| 模型配置 | `SettingOutlined` | `/admin/settings` |
 
 ### 3.2 路由守卫
 
