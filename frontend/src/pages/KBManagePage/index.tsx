@@ -45,6 +45,7 @@ export default function KBManagePage() {
   const [newKBName, setNewKBName] = useState('');
   const [newKBDesc, setNewKBDesc] = useState('');
   const [creating, setCreating] = useState(false);
+  const [kbSiderCollapsed, setKbSiderCollapsed] = useState(false);
 
   const fetchKBs = useCallback(async () => {
     setLoading(true);
@@ -180,13 +181,15 @@ export default function KBManagePage() {
 
   return (
     <Layout style={{ height: '100%' }}>
-      <Layout.Sider width={240} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
+      <Layout.Sider width={240} collapsedWidth={0} collapsed={kbSiderCollapsed} trigger={null} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
         <KBManageSider
           knowledgeBases={kbs}
           currentKB={currentKB}
           onSelectKB={selectKB}
           onNewKB={() => setShowNewKBModal(true)}
           loading={loading}
+          collapsed={kbSiderCollapsed}
+          onToggleCollapse={() => setKbSiderCollapsed(!kbSiderCollapsed)}
         />
       </Layout.Sider>
       <Layout.Content style={{ background: '#f5f5f5', overflow: 'auto', padding: 24 }}>
