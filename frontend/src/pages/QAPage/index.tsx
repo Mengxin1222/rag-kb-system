@@ -26,7 +26,7 @@ function formatKBItem(kb: KBListItem) {
     conversation_max_rounds: 10,
     context_compression: true,
     system_prompt: '',
-    llm_model: 'deepseek-v4-pro',
+    llm_model: 'deepseek-v4-flash',
     llm_temperature: 0.7,
     embedding_model: '',
     rerank_model: '',

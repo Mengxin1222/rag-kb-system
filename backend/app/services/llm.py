@@ -6,7 +6,7 @@ LLM_API_URL = os.getenv("LLM_API_URL", "https://api.deepseek.com/v1/chat/complet
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 
 
-async def chat_stream(messages: list[dict], model: str = "deepseek-chat", temperature: float = 0.7):
+async def chat_stream(messages: list[dict], model: str = "deepseek-v4-flash", temperature: float = 0.7):
     """
     Call DeepSeek API with streaming.
     Yields text chunks.

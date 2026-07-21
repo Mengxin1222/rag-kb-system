@@ -1,7 +1,7 @@
 """Context compression: summarize early conversation rounds via LLM."""
 
 
-async def compress_history(messages: list[dict], max_rounds: int, model: str = "deepseek-chat") -> list[dict]:
+async def compress_history(messages: list[dict], max_rounds: int, model: str = "deepseek-v4-flash") -> list[dict]:
     """
     If messages exceed max_rounds * 2 (user+assistant per round),
     compress early rounds into a summary.

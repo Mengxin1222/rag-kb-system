@@ -29,7 +29,7 @@ function kbToForm(kb: { id: number; name: string; [key: string]: unknown }) {
     conversation_max_rounds: (kb.conversation_max_rounds as number) || 10,
     context_compression: kb.context_compression !== false,
     system_prompt: (kb.system_prompt as string) || '',
-    llm_model: (kb.llm_model as string) || 'deepseek-v4-pro',
+    llm_model: (kb.llm_model as string) || 'deepseek-v4-flash',
     llm_temperature: (kb.llm_temperature as number) || 0.7,
     embedding_model: (kb.embedding_model as string) || '',
     rerank_model: (kb.rerank_model as string) || '',

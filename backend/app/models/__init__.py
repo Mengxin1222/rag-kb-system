@@ -54,7 +54,7 @@ class KnowledgeBase(Base):
         "4. 使用与用户提问相同的语言回答。\n"
         "5. 回答简洁、准确、有条理。"
     ))
-    llm_model = Column(String(100), nullable=False, default="deepseek-chat")
+    llm_model = Column(String(100), nullable=False, default="deepseek-v4-flash")
     llm_temperature = Column(Float, nullable=False, default=0.7)
     embedding_model = Column(String(100), nullable=False, default="text-embedding-v3")
     rerank_model = Column(String(100), nullable=False, default="gte-rerank")
