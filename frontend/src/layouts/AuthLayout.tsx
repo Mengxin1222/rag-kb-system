@@ -98,29 +98,32 @@ export default function AuthLayout() {
             borderRight: `1px solid ${themeToken.colorBorderSecondary}`,
           }}
         >
-          <div
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              borderBottom: `1px solid ${themeToken.colorBorderSecondary}`,
-              color: themeToken.colorTextSecondary,
-              fontSize: 16,
-              transition: 'color 150ms',
-            }}
-          >
-            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Menu
+              mode="inline"
+              selectedKeys={[selectedKey]}
+              items={menuItems}
+              onClick={({ key }) => navigate(key)}
+              style={{ border: 'none', marginTop: 4, flex: 1 }}
+            />
+            <div
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                borderTop: `1px solid ${themeToken.colorBorderSecondary}`,
+                color: themeToken.colorTextSecondary,
+                fontSize: 16,
+                transition: 'color 150ms',
+                flexShrink: 0,
+              }}
+            >
+              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </div>
           </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={menuItems}
-            onClick={({ key }) => navigate(key)}
-            style={{ border: 'none', marginTop: 4 }}
-          />
         </Sider>
         <Content
           style={{
