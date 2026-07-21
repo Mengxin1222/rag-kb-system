@@ -104,9 +104,8 @@ export default function StrategyConfigTab({ kb, onSave }: Props) {
                 LLM 模型
               </Text>
               <Select defaultValue={kb.llm_model} style={{ width: '100%' }}>
-                <Select.Option value="deepseek-chat">deepseek-chat</Select.Option>
-                <Select.Option value="gpt-4o">gpt-4o</Select.Option>
-                <Select.Option value="qwen-max">qwen-max</Select.Option>
+                <Select.Option value="deepseek-v4-pro">deepseek-v4-pro</Select.Option>
+                <Select.Option value="deepseek-v4-flash">deepseek-v4-flash</Select.Option>
               </Select>
             </div>
             <div>

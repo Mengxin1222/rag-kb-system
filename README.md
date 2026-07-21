@@ -10,11 +10,11 @@
 | 应用数据库 | SQLite (SQLAlchemy ORM) |
 | 向量数据库 | ChromaDB |
 | BM25 引擎 | SQLite FTS5 + jieba 分词 |
-| LLM | DeepSeek API |
+| LLM | DeepSeek API (v4-pro / v4-flash) |
 | Embedding | 阿里云 Embedding API |
 | Rerank | 阿里云 Rerank API |
 | 文档解析 | MinerU API |
-| 前端框架 | React + TypeScript + Ant Design 5 (开发中) |
+| 前端框架 | React + TypeScript + Ant Design 5 |
 
 ## 快速开始
 
@@ -26,8 +26,13 @@
 ### 安装依赖
 
 ```bash
+# 后端
 cd backend
 pip install -r requirements.txt
+
+# 前端
+cd frontend
+npm install
 ```
 
 ### 配置环境变量
@@ -61,16 +66,21 @@ MINERU_API_KEY=your-mineru-key
 ### 初始化数据库并启动
 
 ```bash
+# 1. 初始化数据库 + 创建管理员账号
 cd backend
-
-# 初始化数据库 + 创建管理员账号
 python seed.py
 
-# 启动开发服务器
+# 2. 启动后端 (端口 8000)
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+
+# 3. 新开终端，启动前端 (端口 5173)
+cd frontend
+npm run dev
 ```
 
-服务启动后访问 `http://127.0.0.1:8000/docs` 查看 Swagger API 文档。
+服务启动后：
+- 前端: `http://localhost:5173/`
+- 后端 API 文档: `http://localhost:8000/docs`
 
 ## 项目结构
 
@@ -105,6 +115,24 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 │   ├── seed.py                  # 种子脚本
 │   ├── requirements.txt
 │   └── test_ticket*.py          # 集成测试
+├── frontend/
+│   ├── src/
+│   │   ├── main.tsx             # Vite 入口
+│   │   ├── App.tsx              # 路由 + Ant Design 主题
+│   │   ├── api/client.ts        # Axios 封装 + JWT 拦截器
+│   │   ├── contexts/AuthContext.tsx   # 认证状态
+│   │   ├── components/RouteGuard.tsx  # 路由守卫
+│   │   ├── layouts/AuthLayout.tsx     # Header + 可折叠 Sider
+│   │   └── pages/
+│   │       ├── LoginPage.tsx         # 登录页
+│   │       ├── QAPage/               # 问答页 (SSE 流式, 对话管理)
+│   │       ├── SearchPage/           # 知识库搜索 (BM25/语义/混合)
+│   │       ├── KBManagePage/         # 知识库管理 (4 Tab)
+│   │       ├── DashboardPage.tsx     # 仪表盘 + 7天趋势
+│   │       └── UserManagePage.tsx    # 用户管理 CRUD
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts
 ├── docs/
 │   ├── architecture-overview.md # 架构总览
 │   ├── database-design.md       # 数据库设计
