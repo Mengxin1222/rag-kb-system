@@ -181,7 +181,7 @@ export default function KBManagePage() {
 
   return (
     <Layout style={{ height: '100%' }}>
-      <Layout.Sider width={240} collapsedWidth={0} collapsed={kbSiderCollapsed} trigger={null} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
+      <Layout.Sider width={240} collapsedWidth={50} collapsed={kbSiderCollapsed} trigger={null} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
         <KBManageSider
           knowledgeBases={kbs}
           currentKB={currentKB}
