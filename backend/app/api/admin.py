@@ -92,3 +92,22 @@ def dashboard(db: Session = Depends(get_db), admin: User = Depends(get_admin_use
         "kb_ranking": kb_ranking,
         "storage_bytes": total_size,
     }
+
+
+class SettingsUpdate(BaseModel):
+    llm: dict | None = None
+    embedding: dict | None = None
+    rerank: dict | None = None
+    mineru: dict | None = None
+
+
+@router.get("/settings")
+def get_system_settings(admin: User = Depends(get_admin_user)):
+    from app.services.settings_manager import get_settings as _get
+    return _get()
+
+
+@router.put("/settings")
+def update_system_settings(data: SettingsUpdate, admin: User = Depends(get_admin_user)):
+    from app.services.settings_manager import save_settings as _save
+    return _save(data.model_dump(exclude_none=True))

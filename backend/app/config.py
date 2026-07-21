@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "./data/uploads"
     SEED_ADMIN_USERNAME: str = "admin"
     SEED_ADMIN_PASSWORD: str = "admin123"
+    SETTINGS_FILE: str = "./data/settings.json"
 
     class Config:
         env_file = ".env"

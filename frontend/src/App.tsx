@@ -10,6 +10,7 @@ import SearchPage from './pages/SearchPage/index';
 import KBManagePage from './pages/KBManagePage/index';
 import DashboardPage from './pages/DashboardPage';
 import UserManagePage from './pages/UserManagePage';
+import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
   return (
@@ -57,6 +58,14 @@ export default function App() {
                 element={
                   <RouteGuard requireAdmin>
                     <UserManagePage />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <RouteGuard requireAdmin>
+                    <SettingsPage />
                   </RouteGuard>
                 }
               />

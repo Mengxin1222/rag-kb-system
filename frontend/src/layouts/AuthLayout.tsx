@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -26,6 +27,7 @@ const adminMenuItems = [
   { key: '/kb/manage', icon: <DatabaseOutlined />, label: '知识库管理' },
   { key: '/dashboard', icon: <DashboardOutlined />, label: '仪表盘' },
   { key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' },
+  { key: '/admin/settings', icon: <SettingOutlined />, label: '模型配置' },
 ];
 
 export default function AuthLayout() {
@@ -73,11 +75,9 @@ export default function AuthLayout() {
           >
             Q
           </div>
-          {!collapsed && (
-            <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
-              RAG 知识库问答系统
-            </span>
-          )}
+          <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
+            RAG 知识库问答系统
+          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 14 }}>{user?.username}</span>
