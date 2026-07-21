@@ -40,7 +40,7 @@ export default function App() {
                 <Route path="/qa" element={<QAPage />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route
-                  path="/kb/:kbId"
+                  path="/kb/manage"
                   element={
                     <RouteGuard requireAdmin>
                       <KBManagePage />

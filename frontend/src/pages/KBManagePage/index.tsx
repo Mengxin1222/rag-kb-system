@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Tabs, Typography, message, Empty, Spin } from 'antd';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getKB, updateKB, deleteKB } from '../../api/kb';
-import { useKBSelect } from '../../contexts/KBSelectContext';
+import { Tabs, Typography, message, Empty, Spin, Select, Space, Input, Button } from 'antd';
+import { getKB, updateKB, deleteKB, listKBs, createKB, type KBListItem } from '../../api/kb';
 import BasicInfoTab from './BasicInfoTab';
 import StrategyConfigTab from './StrategyConfigTab';
 import DocManageTab from './DocManageTab';
@@ -36,29 +34,49 @@ function kbToForm(kb: { id: number; name: string; [key: string]: unknown }) {
 }
 
 export default function KBManagePage() {
-  const { kbId } = useParams<{ kbId: string }>();
-  const navigate = useNavigate();
-  const { setSelectedKBId } = useKBSelect();
+  const [kbs, setKBs] = useState<KBListItem[]>([]);
   const [currentKB, setCurrentKB] = useState<ReturnType<typeof kbToForm> | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('basic');
 
-  const fetchKB = useCallback(async () => {
-    if (!kbId) return;
+  const fetchKBs = useCallback(async () => {
+    try {
+      const data = await listKBs();
+      setKBs(data);
+      return data;
+    } catch { return []; }
+  }, []);
+
+  useEffect(() => {
+    fetchKBs().then((data) => {
+      setLoading(false);
+      if (data.length > 0) {
+        selectKB(data[0]);
+      }
+    });
+  }, []);
+
+  const selectKB = async (kbItem: KBListItem) => {
     setLoading(true);
     try {
-      const detail = await getKB(parseInt(kbId));
-      const form = kbToForm(detail as any);
-      setCurrentKB(form);
-      setSelectedKBId(form.id);
+      const detail = await getKB(kbItem.id);
+      setCurrentKB(kbToForm(detail as any));
     } catch {
-      message.error('获取知识库信息失败');
+      setCurrentKB(kbToForm(kbItem as any));
     } finally {
       setLoading(false);
     }
-  }, [kbId, setSelectedKBId]);
+    setActiveTab('basic');
+  };
 
-  useEffect(() => { fetchKB(); }, [fetchKB]);
+  const handleCreate = async (name: string) => {
+    try {
+      const kb = await createKB({ name });
+      message.success('知识库创建成功');
+      await fetchKBs();
+      selectKB(kb as unknown as KBListItem);
+    } catch { message.error('创建失败'); }
+  };
 
   const handleSave = async (name: string, desc: string) => {
     if (!currentKB) return;
@@ -74,7 +92,9 @@ export default function KBManagePage() {
     try {
       await deleteKB(currentKB.id);
       message.success('已删除');
-      navigate('/dashboard');
+      const data = await fetchKBs();
+      if (data.length > 0) selectKB(data[0]);
+      else setCurrentKB(null);
     } catch { message.error('删除失败'); }
   };
 
@@ -107,27 +127,61 @@ export default function KBManagePage() {
     setCurrentKB({ ...currentKB, ...fields });
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 100 }}><Spin size="large" /></div>;
-  if (!currentKB) return <Empty description="知识库不存在" />;
+  // KB selector + create
+  const [newKbName, setNewKbName] = useState('');
+  const [creating] = useState(false);
+
+  if (!currentKB && !loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: 80 }}>
+        <Empty description="暂无知识库" />
+        <Space style={{ marginTop: 16 }}>
+          <Input
+            placeholder="输入名称新建知识库"
+            value={newKbName}
+            onChange={(e) => setNewKbName(e.target.value)}
+            onPressEnter={() => { handleCreate(newKbName); setNewKbName(''); }}
+            style={{ width: 200 }}
+          />
+          <Button loading={creating} onClick={() => { handleCreate(newKbName); setNewKbName(''); }}>
+            创建
+          </Button>
+        </Space>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Text strong style={{ fontSize: 16 }}>{currentKB.name}</Text>
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          文档: {currentKB.docCount} · 切片: {currentKB.chunkCount} · 创建: {currentKB.created_at}
-        </Text>
+        <Select
+          value={currentKB?.id}
+          onChange={(id) => { const kb = kbs.find((k) => k.id === id); if (kb) selectKB(kb); }}
+          options={kbs.map((kb) => ({ label: kb.name, value: kb.id }))}
+          style={{ minWidth: 200 }}
+          placeholder="选择知识库"
+        />
+        {currentKB && (
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            文档: {currentKB.docCount} · 切片: {currentKB.chunkCount} · 创建: {currentKB.created_at}
+          </Text>
+        )}
       </div>
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        items={[
-          { key: 'basic', label: '基础信息', children: <BasicInfoTab kb={currentKB} onSave={handleSave} onDelete={handleDelete} /> },
-          { key: 'strategy', label: '策略配置', children: <StrategyConfigTab kb={currentKB} onUpdate={(f) => updateKBField(f)} onSave={handleSaveStrategy} /> },
-          { key: 'docs', label: '文档管理', children: <DocManageTab kbId={currentKB.id} onSwitchToChunks={() => setActiveTab('chunks')} /> },
-          { key: 'chunks', label: '切片编辑器', children: <ChunkEditorTab kbId={currentKB.id} /> },
-        ]}
-      />
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>
+      ) : currentKB ? (
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={[
+            { key: 'basic', label: '基础信息', children: <BasicInfoTab kb={currentKB} onSave={handleSave} onDelete={handleDelete} /> },
+            { key: 'strategy', label: '策略配置', children: <StrategyConfigTab kb={currentKB} onUpdate={(f) => updateKBField(f)} onSave={handleSaveStrategy} /> },
+            { key: 'docs', label: '文档管理', children: <DocManageTab kbId={currentKB.id} onSwitchToChunks={() => setActiveTab('chunks')} /> },
+            { key: 'chunks', label: '切片编辑器', children: <ChunkEditorTab kbId={currentKB.id} /> },
+          ]}
+        />
+      ) : null}
     </div>
   );
 }

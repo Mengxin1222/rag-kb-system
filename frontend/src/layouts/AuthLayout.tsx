@@ -1,83 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Tag, theme } from 'antd';
 import {
   MessageOutlined,
   SearchOutlined,
+  DatabaseOutlined,
   DashboardOutlined,
   TeamOutlined,
   SettingOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  DatabaseOutlined,
-  BookOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import { useKBSelect } from '../contexts/KBSelectContext';
-import { listKBs, type KBListItem } from '../api/kb';
 
 const { Header, Sider, Content } = Layout;
+
+const userMenuItems = [
+  { key: '/qa', icon: <MessageOutlined />, label: '问答' },
+  { key: '/search', icon: <SearchOutlined />, label: '知识库搜索' },
+];
+
+const adminMenuItems = [
+  { key: '/qa', icon: <MessageOutlined />, label: '问答' },
+  { key: '/search', icon: <SearchOutlined />, label: '知识库搜索' },
+  { key: '/kb/manage', icon: <DatabaseOutlined />, label: '知识库管理' },
+  { key: '/dashboard', icon: <DashboardOutlined />, label: '仪表盘' },
+  { key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' },
+  { key: '/admin/settings', icon: <SettingOutlined />, label: '模型配置' },
+];
 
 export default function AuthLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAdmin } = useAuth();
-  const { setSelectedKBId } = useKBSelect();
   const { token: themeToken } = theme.useToken();
   const [collapsed, setCollapsed] = useState(false);
-  const [kbs, setKBs] = useState<KBListItem[]>([]);
 
-  useEffect(() => {
-    listKBs().then(setKBs).catch(() => {});
-  }, []);
-
-  const handleMenuClick = (key: string) => {
-    if (key.startsWith('/kb-')) {
-      const kbId = parseInt(key.replace('/kb-', ''));
-      setSelectedKBId(kbId);
-      navigate(`/kb/${kbId}`);
-    } else if (key.startsWith('/qa-kb-')) {
-      const kbId = parseInt(key.replace('/qa-kb-', ''));
-      setSelectedKBId(kbId);
-      navigate(`/qa?kb_id=${kbId}`);
-    } else {
-      navigate(key);
-    }
-  };
-
-  const menuItems = [
-    { key: '/qa', icon: <MessageOutlined />, label: '问答' },
-    ...(isAdmin ? [{ key: '/dashboard', icon: <DashboardOutlined />, label: '仪表盘' }] : []),
-    { key: 'divider-kb', type: 'divider' as const, label: '知识库' },
-    ...kbs.map((kb) => ({
-      key: `/qa-kb-${kb.id}`,
-      icon: <BookOutlined />,
-      label: kb.name,
-    })),
-    { key: '/search', icon: <SearchOutlined />, label: '知识库搜索' },
-  ];
-
-  if (isAdmin) {
-    menuItems.push(
-      { key: 'divider-admin', type: 'divider' as const, label: '管理' },
-      ...kbs.map((kb) => ({
-        key: `/kb-${kb.id}`,
-        icon: <DatabaseOutlined />,
-        label: `管理 · ${kb.name}`,
-      })),
-      { key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' },
-      { key: '/admin/settings', icon: <SettingOutlined />, label: '模型配置' },
-    );
-  }
-
-  // Find the best matching key for current path
-  const currentPath = location.pathname + location.search;
-  const allKeys = menuItems.map((m) => m.key as string).filter((k) => !k.startsWith('divider'));
-  const selectedKey =
-    allKeys.find((k) => k === currentPath) ||
-    allKeys.find((k) => currentPath.startsWith(k)) ||
-    '/qa';
+  const menuItems = isAdmin ? adminMenuItems : userMenuItems;
+  const selectedKey = menuItems.find((item) => location.pathname.startsWith(item.key))?.key || '/qa';
 
   return (
     <Layout style={{ height: '100vh' }}>
@@ -117,7 +78,7 @@ export default function AuthLayout() {
               mode="inline"
               selectedKeys={[selectedKey]}
               items={menuItems}
-              onClick={({ key }) => handleMenuClick(key)}
+              onClick={({ key }) => navigate(key)}
               style={{ border: 'none', marginTop: 4, flex: 1 }}
             />
             <div
